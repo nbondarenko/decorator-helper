@@ -1,8 +1,10 @@
 var ObjectID = require('mongodb').ObjectID;
 
+const DB_COLLECTION = 'rooms';
+
 module.exports = function(app, db) {
   app.get('/rooms', (request, response) => {
-    db.collection('rooms').find({}).toArray((err, result) => {
+    db.collection(DB_COLLECTION).find({}).toArray((err, result) => {
       if (err) {
         response.send({ 'error': 'An error has occurred' });
       } else {
@@ -17,11 +19,11 @@ module.exports = function(app, db) {
       height: request.body.height,
       walls: request.body.walls
     };
-    db.collection('rooms').insert(room, (err, result) => {
+    db.collection(DB_COLLECTION).insert(room, (err, result) => {
       if (err) {
-        response.send({ 'error': 'An error has occurred' });
+        response.status(422).send({ 'error': 'An error has occurred' });
       } else {
-        response.send(result.ops[0]);
+        response.status(201).send(result.ops[0]);
       }
     });
   });
@@ -29,7 +31,7 @@ module.exports = function(app, db) {
   app.get('/rooms/:id', (request, response) => {
     const id = request.params.id;
     const details = { '_id': new ObjectID(id) };
-    db.collection('rooms').findOne(details, (err, item) => {
+    db.collection(DB_COLLECTION).findOne(details, (err, item) => {
       if (err) {
         response.send({'error':'An error has occurred'});
       } else {
@@ -41,7 +43,7 @@ module.exports = function(app, db) {
   app.delete('/rooms/:id', (request, response) => {
     const id = request.params.id;
     const details = { '_id': new ObjectID(id) };
-    db.collection('rooms').remove(details, (err, item) => {
+    db.collection(DB_COLLECTION).remove(details, (err, item) => {
       if (err) {
         response.send({'error':'An error has occurred'});
       } else {
@@ -58,7 +60,7 @@ module.exports = function(app, db) {
       height: request.body.height,
       walls: request.body.walls
     };
-    db.collection('rooms').update(details, room, (err, result) => {
+    db.collection(DB_COLLECTION).update(details, room, (err, result) => {
       if (err) {
         response.send({'error':'An error has occurred'});
       } else {
@@ -80,7 +82,7 @@ module.exports = function(app, db) {
     }
 
     const details = { '_id': new ObjectID(id) };
-    db.collection('rooms').findOne(details, (err, item) => {
+    db.collection(DB_COLLECTION).findOne(details, (err, item) => {
       if (err) {
         response.status(422).send({'error':'Invalid room id'});
       } else {
