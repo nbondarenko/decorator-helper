@@ -62,9 +62,41 @@ module.exports = function(app, db) {
       if (err) {
         response.send({'error':'An error has occurred'});
       } else {
-        console.log(result);
         response.send(room);
       }
     });
   });
+
+  app.get('/rooms/:id/count_rolls', (request, response) => {
+    const id = request.params.id;
+    const { rollWidth, rollLength } = request.query;
+
+    if(rollWidth == null || rollLength == null || id == null) {
+      return response.status(422).send({'error':'Invalid params'});
+    }
+
+    if(Number(rollWidth, 10) <= 0 || Number(rollLength, 10) <= 0) {
+      return response.status(422).send({'error':'Roll params must be positive'});
+    }
+
+    const details = { '_id': new ObjectID(id) };
+    db.collection('rooms').findOne(details, (err, item) => {
+      if (err) {
+        response.status(422).send({'error':'Invalid room id'});
+      } else {
+        response.status(200).send(countRolls(item, rollWidth, rollLength));
+      }
+    });
+  });
+
+  countRolls = (room, rollWidth, rollLength) => {
+    let roomPerimeter = room.walls.reduce((a, b) => a + Number(b, 10), 0);
+    let totalLength = Math.ceil(roomPerimeter / rollWidth) * Number(room.height, 10);
+    let rollsCount = Math.ceil(totalLength / rollLength);
+
+    return {
+      'rollsCount': rollsCount,
+      'spareMeters': rollsCount * rollLength - totalLength,
+    };
+  }
 };
