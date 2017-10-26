@@ -47,7 +47,7 @@ module.exports = function(app, db) {
       if (err) {
         response.send({'error':'An error has occurred'});
       } else {
-        response.send(item);
+        response.sendStatus(200);
       }
     });
   });
